@@ -19,10 +19,11 @@ var (
 )
 
 type model struct {
-	cwd      string
-	cwdDirs  []string
-	cwdFiles []string
-	cursor   int
+	cwd           string
+	cwdDirs       []string
+	cwdFiles      []string
+	cursor        int
+	cursorHistory map[string]int
 }
 
 func modelInit() model {
@@ -32,6 +33,7 @@ func modelInit() model {
 		[]string{},
 		[]string{},
 		0,
+		make(map[string]int),
 	}
 	m.updateEntries()
 	return m
@@ -54,6 +56,53 @@ func (m model) entriesLength() int {
 	return len(m.cwdDirs) + len(m.cwdFiles)
 }
 
+func (m *model) rememberCursor() {
+	m.cursorHistory[m.cwd] = m.cursor
+}
+
+func (m *model) restoreCursor() {
+	m.cursor = m.cursorHistory[m.cwd]
+}
+
+func (m *model) Up() {
+	if m.cursor > 0 {
+		m.cursor--
+	}
+}
+
+func (m *model) Down() {
+	if m.cursor < m.entriesLength()-1 {
+		m.cursor++
+	}
+}
+
+func (m *model) Left() {
+	m.rememberCursor()
+
+	m.cwd = filepath.Join(m.cwd, "..")
+
+	m.updateEntries()
+	m.restoreCursor()
+}
+
+func (m *model) Right() {
+	if m.cursor >= m.entriesLength() {
+		return
+	}
+
+	m.rememberCursor()
+
+	if m.cursor < len(m.cwdDirs) {
+		m.cwd = filepath.Join(m.cwd, m.cwdDirs[m.cursor])
+	} else if m.cursor < m.entriesLength() {
+		i := m.cursor - len(m.cwdDirs)
+		m.cwd = filepath.Join(m.cwd, m.cwdFiles[i])
+	}
+
+	m.restoreCursor()
+	m.updateEntries()
+}
+
 func main() {
 	p := tea.NewProgram(modelInit(), tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
@@ -72,29 +121,14 @@ func (m model) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "q", "ctrl+c":
 			return m, tea.Quit
-		case "j", "down":
-			if m.cursor < m.entriesLength()-1 {
-				m.cursor++
-			}
 		case "k", "up":
-			if m.cursor > 0 {
-				m.cursor--
-			}
-		case "l", "right":
-			if m.cursor < len(m.cwdDirs) {
-				m.cwd = filepath.Join(m.cwd, m.cwdDirs[m.cursor])
-				m.cursor = 0
-				m.updateEntries()
-			} else if m.cursor < m.entriesLength() {
-				i := m.cursor - len(m.cwdDirs)
-				m.cwd = filepath.Join(m.cwd, m.cwdFiles[i])
-				m.cursor = 0
-				m.updateEntries()
-			}
+			m.Up()
+		case "j", "down":
+			m.Down()
 		case "h", "left":
-			m.cwd = filepath.Join(m.cwd, "..")
-			m.cursor = 0
-			m.updateEntries()
+			m.Left()
+		case "l", "right":
+			m.Right()
 		}
 	}
 
