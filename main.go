@@ -75,11 +75,19 @@ func (m *model) Down() {
 
 func (m *model) Left() {
 	m.rememberCursor()
+	prevCwd := filepath.Base(m.cwd)
 
 	m.cwd = filepath.Join(m.cwd, "..")
 
 	m.updateEntries()
 	m.restoreCursor()
+	if m.cursor == 0 {
+		for i, entry := range m.cwdDirs {
+			if prevCwd == entry {
+				m.cursor = i
+			}
+		}
+	}
 }
 
 func (m *model) Right() {

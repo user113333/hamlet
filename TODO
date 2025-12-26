@@ -1,4 +1,3 @@
-- On <h> position cursor to previous cwd
-
++ On <h> position cursor to previous cwd
 + Remember cursor position after <l> and restore it after <h>
 + Display directories before files
