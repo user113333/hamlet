@@ -1,2 +1,2 @@
 + Display directories before files
-- Remember cursor position after <l> command and invoke it after <h>
+- Remember cursor position after <l> and restore it after <h>
