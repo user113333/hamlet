@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	directoryStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("4"))
+	directoryStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("12"))
 	selectedStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("212"))
 )
 
