@@ -19,15 +19,17 @@ var (
 )
 
 type model struct {
-	cwd        string
-	cwdEntries []string
-	cursor     int
+	cwd      string
+	cwdDirs  []string
+	cwdFiles []string
+	cursor   int
 }
 
 func modelInit() model {
 	currentDir, _ := filepath.Abs(".") // TODO: err
 	m := model{
 		currentDir,
+		[]string{},
 		[]string{},
 		0,
 	}
@@ -36,11 +38,20 @@ func modelInit() model {
 }
 
 func (m *model) updateEntries() {
-	m.cwdEntries = nil
+	m.cwdDirs = nil
+	m.cwdFiles = nil
 	entries, _ := os.ReadDir(m.cwd) // TODO: err
-	for _, entriy := range entries {
-		m.cwdEntries = append(m.cwdEntries, entriy.Name())
+	for _, entry := range entries {
+		if entry.IsDir() {
+			m.cwdDirs = append(m.cwdDirs, entry.Name())
+		} else {
+			m.cwdFiles = append(m.cwdFiles, entry.Name())
+		}
 	}
+}
+
+func (m model) entriesLength() int {
+	return len(m.cwdDirs) + len(m.cwdFiles)
 }
 
 func main() {
@@ -62,7 +73,7 @@ func (m model) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 		case "q", "ctrl+c":
 			return m, tea.Quit
 		case "j", "down":
-			if m.cursor < len(m.cwdEntries)-1 {
+			if m.cursor < m.entriesLength()-1 {
 				m.cursor++
 			}
 		case "k", "up":
@@ -70,8 +81,13 @@ func (m model) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 				m.cursor--
 			}
 		case "l", "right":
-			if len(m.cwdEntries) != 0 {
-				m.cwd = filepath.Join(m.cwd, m.cwdEntries[m.cursor])
+			if m.cursor < len(m.cwdDirs) {
+				m.cwd = filepath.Join(m.cwd, m.cwdDirs[m.cursor])
+				m.cursor = 0
+				m.updateEntries()
+			} else if m.cursor < m.entriesLength() {
+				i := m.cursor - len(m.cwdDirs)
+				m.cwd = filepath.Join(m.cwd, m.cwdFiles[i])
 				m.cursor = 0
 				m.updateEntries()
 			}
@@ -92,7 +108,16 @@ func (m model) View() string {
 	builder.WriteString(m.cwd)
 	builder.WriteString("\n")
 	i := 0
-	for _, entry := range m.cwdEntries {
+	for _, entry := range m.cwdDirs {
+		if i == m.cursor {
+			builder.WriteString(selectedStyle.Render(entry))
+		} else {
+			builder.WriteString(directoryStyle.Render(entry))
+		}
+		builder.WriteString("\n")
+		i++
+	}
+	for _, entry := range m.cwdFiles {
 		if i == m.cursor {
 			builder.WriteString(selectedStyle.Render(entry))
 		} else {
