@@ -1,8 +1,5 @@
 package main
 
-// A simple program that opens the alternate screen buffer then counts down
-// from 5 and then exits.
-
 import (
 	"fmt"
 	"os"
