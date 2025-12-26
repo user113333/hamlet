@@ -1,3 +1,6 @@
+- With <f3> split view (https://github.com/charmbracelet/bubbletea/blob/main/examples/split-editors/main.go)
+- Before lines overflow write ellipsis (...) (https://github.com/charmbracelet/bubbletea/blob/main/examples/window-size/main.go)
+
 + On <h> position cursor to previous cwd
 + Remember cursor position after <l> and restore it after <h>
 + Display directories before files
