@@ -1,1 +1,6 @@
 hamlet - a tragic file explorer
+
+install:
+git clone https://github.com/user113333/hamlet
+cd hamlet
+go install
