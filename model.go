@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 )
 
-type Model struct {
+type ModelApp struct {
 	cwd           string
 	cwdDirs       []string
 	cwdFiles      []string
@@ -13,14 +13,30 @@ type Model struct {
 	cursorHistory map[string]int
 }
 
+type ModelTea struct {
+	windowWidth  int
+	windowHeight int
+}
+
+type Model struct {
+	ModelApp
+	ModelTea
+}
+
 func ModelNew() Model {
 	currentDir, _ := filepath.Abs(".") // TODO: err
 	m := Model{
-		currentDir,
-		[]string{},
-		[]string{},
-		0,
-		make(map[string]int),
+		ModelApp{
+			currentDir,
+			[]string{},
+			[]string{},
+			0,
+			make(map[string]int),
+		},
+		ModelTea{
+			0,
+			0,
+		},
 	}
 	m.updateEntries()
 	return m

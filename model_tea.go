@@ -8,7 +8,7 @@ import (
 )
 
 func (m Model) Init() tea.Cmd {
-	return nil
+	return tea.WindowSize()
 }
 
 func (m Model) Update(message tea.Msg) (tea.Model, tea.Cmd) {
@@ -26,6 +26,9 @@ func (m Model) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 		case "l", "right":
 			m.Right()
 		}
+	case tea.WindowSizeMsg:
+		model.windowWidth = msg.Width
+		model.windowHeight = msg.Height
 	}
 
 	return m, nil
@@ -36,12 +39,15 @@ var (
 	selectedStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("212"))
 )
 
-func (m Model) View() string {
-	var builder strings.Builder
-	builder.WriteString(m.cwd)
-	builder.WriteString("\n")
+// Appends to strings.Builder cwd files,dir
+// Stops at limit
+// returns: has been limit reached
+func (m Model) AppendCWDItemsToBuilder(builder *strings.Builder, limit int) bool {
 	i := 0
 	for _, entry := range m.cwdDirs {
+		if i == limit {
+			return true
+		}
 		if i == m.cursor {
 			builder.WriteString(selectedStyle.Render(entry))
 		} else {
@@ -51,6 +57,9 @@ func (m Model) View() string {
 		i++
 	}
 	for _, entry := range m.cwdFiles {
+		if i == limit {
+			return true
+		}
 		if i == m.cursor {
 			builder.WriteString(selectedStyle.Render(entry))
 		} else {
@@ -58,6 +67,17 @@ func (m Model) View() string {
 		}
 		builder.WriteString("\n")
 		i++
+	}
+	return false
+}
+
+func (m Model) View() string {
+	var builder strings.Builder
+	builder.WriteString(m.cwd)
+	builder.WriteString("\n")
+	isLimitReached := m.AppendCWDItemsToBuilder(&builder, model.windowHeight-2)
+	if isLimitReached {
+		builder.WriteString("...")
 	}
 	return builder.String()
 }
