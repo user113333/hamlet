@@ -4,3 +4,8 @@ install:
 git clone https://github.com/user113333/hamlet
 cd hamlet
 go install
+
+FAQ
+
+Q: How to make a terminal automatically cd to cwd after program exit?
+A: alias h='hamlet -c && cd "$(cat $HOME/.config/hamlet/cwd)"'
