@@ -49,26 +49,33 @@ var (
 // returns: has been limit reached
 func (m Model) AppendCWDItemsToBuilder(builder *strings.Builder, limit int) bool {
 	i := 0
-	for _, entry := range m.cwdDirs {
+	// TODO: cleanup
+	for _, entry := range m.cwdEntries {
+		if !entry.isDir {
+			continue
+		}
 		if i == limit {
 			return true
 		}
 		if i == m.cursor {
-			builder.WriteString(selectedStyle.Render(entry))
+			builder.WriteString(selectedStyle.Render(entry.name))
 		} else {
-			builder.WriteString(directoryStyle.Render(entry))
+			builder.WriteString(directoryStyle.Render(entry.name))
 		}
 		builder.WriteString("\n")
 		i++
 	}
-	for _, entry := range m.cwdFiles {
+	for _, entry := range m.cwdEntries {
+		if entry.isDir {
+			continue
+		}
 		if i == limit {
 			return true
 		}
 		if i == m.cursor {
-			builder.WriteString(selectedStyle.Render(entry))
+			builder.WriteString(selectedStyle.Render(entry.name))
 		} else {
-			builder.WriteString(entry)
+			builder.WriteString(entry.name)
 		}
 		builder.WriteString("\n")
 		i++

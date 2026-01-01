@@ -8,8 +8,7 @@ import (
 
 type ModelApp struct {
 	cwd           string
-	cwdDirs       []string
-	cwdFiles      []string
+	cwdEntries    []Entry
 	cursor        int
 	cursorHistory map[string]string
 
@@ -26,13 +25,17 @@ type Model struct {
 	ModelTea
 }
 
+type Entry struct {
+	name  string
+	isDir bool
+}
+
 func ModelNew() Model {
 	currentDir, _ := filepath.Abs(".") // TODO: err
 	m := Model{
 		ModelApp{
 			currentDir,
-			[]string{},
-			[]string{},
+			[]Entry{},
 			0,
 			make(map[string]string),
 			false,
@@ -56,18 +59,15 @@ func isItemHidden(name string) bool {
 	return false
 }
 
-func (m *Model) getEntry(i int) string {
-	if i < len(m.cwdDirs) {
-		return m.cwdDirs[i]
-	} else if i < m.entriesLength() {
-		return m.cwdFiles[i-len(m.cwdDirs)]
+func (m *Model) getEntry(i int) Entry {
+	if i < len(m.cwdEntries) {
+		return m.cwdEntries[i]
 	}
-	return "" // TODO: throw error (maybe return)
+	return Entry{} // TODO: throw error (maybe return)
 }
 
 func (m *Model) updateEntries() {
-	m.cwdDirs = nil
-	m.cwdFiles = nil
+	m.cwdEntries = nil
 	m.cursor = 0
 	entries, _ := os.ReadDir(m.cwd) // TODO: err
 	for _, entry := range entries {
@@ -76,31 +76,19 @@ func (m *Model) updateEntries() {
 				continue
 			}
 		}
-		if entry.IsDir() {
-			m.cwdDirs = append(m.cwdDirs, entry.Name())
-		} else {
-			m.cwdFiles = append(m.cwdFiles, entry.Name())
-		}
+		m.cwdEntries = append(m.cwdEntries, Entry{entry.Name(), entry.IsDir()})
 	}
 }
 
-func (m Model) entriesLength() int {
-	return len(m.cwdDirs) + len(m.cwdFiles)
-}
-
 func (m *Model) rememberCursor() {
-	m.cursorHistory[m.cwd] = m.getEntry(m.cursor)
+	m.cursorHistory[m.cwd] = m.getEntry(m.cursor).name
 }
 
 func (m *Model) restoreCursor() {
 	target := m.cursorHistory[m.cwd]
-	i := slices.Index(m.cwdDirs, target)
-	if i == -1 {
-		i = slices.Index(m.cwdFiles, target)
-		if i != -1 {
-			i += len(m.cwdDirs)
-		}
-	}
+	i := slices.IndexFunc(m.cwdEntries, func(e Entry) bool {
+		return e.name == target
+	})
 	if i != -1 {
 		m.cursor = i
 	}
@@ -113,7 +101,7 @@ func (m *Model) Up() {
 }
 
 func (m *Model) Down() {
-	if m.cursor < m.entriesLength()-1 {
+	if m.cursor < len(m.cwdEntries)-1 {
 		m.cursor++
 	}
 }
@@ -129,7 +117,9 @@ func (m *Model) Left() {
 
 	// If no cwd restored, position cursor to dir we are comming from
 	if m.cursor == 0 {
-		i := slices.Index(m.cwdDirs, prevCwd)
+		i := slices.IndexFunc(m.cwdEntries, func(e Entry) bool {
+			return prevCwd == e.name && e.isDir
+		})
 		if i >= 0 {
 			m.cursor = i
 		}
@@ -137,13 +127,13 @@ func (m *Model) Left() {
 }
 
 func (m *Model) Right() {
-	if m.cursor >= m.entriesLength() {
+	if m.cursor >= len(m.cwdEntries) {
 		return
 	}
 
 	m.rememberCursor()
 
-	m.cwd = filepath.Join(m.cwd, m.getEntry(m.cursor))
+	m.cwd = filepath.Join(m.cwd, m.getEntry(m.cursor).name)
 
 	m.updateEntries()
 	m.restoreCursor()
