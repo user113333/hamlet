@@ -11,6 +11,8 @@ type ModelApp struct {
 	cwdFiles      []string
 	cursor        int
 	cursorHistory map[string]int
+
+	showHiddenItems bool
 }
 
 type ModelTea struct {
@@ -32,6 +34,7 @@ func ModelNew() Model {
 			[]string{},
 			0,
 			make(map[string]int),
+			false,
 		},
 		ModelTea{
 			0,
@@ -42,11 +45,26 @@ func ModelNew() Model {
 	return m
 }
 
+func isItemHidden(name string) bool {
+	if len(name) <= 0 {
+		return true // ?
+	}
+	if name[0] == '.' {
+		return true
+	}
+	return false
+}
+
 func (m *Model) updateEntries() {
 	m.cwdDirs = nil
 	m.cwdFiles = nil
 	entries, _ := os.ReadDir(m.cwd) // TODO: err
 	for _, entry := range entries {
+		if !m.showHiddenItems {
+			if isItemHidden(entry.Name()) {
+				continue
+			}
+		}
 		if entry.IsDir() {
 			m.cwdDirs = append(m.cwdDirs, entry.Name())
 		} else {

@@ -25,6 +25,9 @@ func (m Model) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 			m.Left()
 		case "l", "right":
 			m.Right()
+		case "H":
+			m.showHiddenItems = !m.showHiddenItems
+			m.updateEntries()
 		}
 	case tea.WindowSizeMsg:
 		model.windowWidth = msg.Width
