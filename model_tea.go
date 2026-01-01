@@ -27,7 +27,9 @@ func (m Model) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 			m.Right()
 		case "H":
 			m.showHiddenItems = !m.showHiddenItems
+			m.rememberCursor()
 			m.updateEntries()
+			m.restoreCursor()
 		}
 	case tea.WindowSizeMsg:
 		model.windowWidth = msg.Width

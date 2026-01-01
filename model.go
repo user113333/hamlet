@@ -11,7 +11,7 @@ type ModelApp struct {
 	cwdDirs       []string
 	cwdFiles      []string
 	cursor        int
-	cursorHistory map[string]int
+	cursorHistory map[string]string
 
 	showHiddenItems bool
 }
@@ -34,7 +34,7 @@ func ModelNew() Model {
 			[]string{},
 			[]string{},
 			0,
-			make(map[string]int),
+			make(map[string]string),
 			false,
 		},
 		ModelTea{
@@ -68,6 +68,7 @@ func (m *Model) getEntry(i int) string {
 func (m *Model) updateEntries() {
 	m.cwdDirs = nil
 	m.cwdFiles = nil
+	m.cursor = 0
 	entries, _ := os.ReadDir(m.cwd) // TODO: err
 	for _, entry := range entries {
 		if !m.showHiddenItems {
@@ -88,11 +89,21 @@ func (m Model) entriesLength() int {
 }
 
 func (m *Model) rememberCursor() {
-	m.cursorHistory[m.cwd] = m.cursor
+	m.cursorHistory[m.cwd] = m.getEntry(m.cursor)
 }
 
 func (m *Model) restoreCursor() {
-	m.cursor = m.cursorHistory[m.cwd]
+	target := m.cursorHistory[m.cwd]
+	i := slices.Index(m.cwdDirs, target)
+	if i == -1 {
+		i = slices.Index(m.cwdFiles, target)
+		if i != -1 {
+			i += len(m.cwdDirs)
+		}
+	}
+	if i != -1 {
+		m.cursor = i
+	}
 }
 
 func (m *Model) Up() {
@@ -109,12 +120,14 @@ func (m *Model) Down() {
 
 func (m *Model) Left() {
 	m.rememberCursor()
-	prevCwd := filepath.Base(m.cwd)
 
+	prevCwd := filepath.Base(m.cwd)
 	m.cwd = filepath.Join(m.cwd, "..")
 
 	m.updateEntries()
 	m.restoreCursor()
+
+	// If no cwd restored, position cursor to dir we are comming from
 	if m.cursor == 0 {
 		i := slices.Index(m.cwdDirs, prevCwd)
 		if i >= 0 {
@@ -132,6 +145,6 @@ func (m *Model) Right() {
 
 	m.cwd = filepath.Join(m.cwd, m.getEntry(m.cursor))
 
-	m.restoreCursor()
 	m.updateEntries()
+	m.restoreCursor()
 }
