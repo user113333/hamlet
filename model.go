@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"slices"
 )
 
 type ModelApp struct {
@@ -115,10 +116,9 @@ func (m *Model) Left() {
 	m.updateEntries()
 	m.restoreCursor()
 	if m.cursor == 0 {
-		for i, entry := range m.cwdDirs {
-			if prevCwd == entry {
-				m.cursor = i
-			}
+		i := slices.Index(m.cwdDirs, prevCwd)
+		if i >= 0 {
+			m.cursor = i
 		}
 	}
 }
