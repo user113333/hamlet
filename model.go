@@ -55,6 +55,15 @@ func isItemHidden(name string) bool {
 	return false
 }
 
+func (m *Model) getEntry(i int) string {
+	if i < len(m.cwdDirs) {
+		return m.cwdDirs[i]
+	} else if i < m.entriesLength() {
+		return m.cwdFiles[i-len(m.cwdDirs)]
+	}
+	return "" // TODO: throw error (maybe return)
+}
+
 func (m *Model) updateEntries() {
 	m.cwdDirs = nil
 	m.cwdFiles = nil
@@ -121,12 +130,7 @@ func (m *Model) Right() {
 
 	m.rememberCursor()
 
-	if m.cursor < len(m.cwdDirs) {
-		m.cwd = filepath.Join(m.cwd, m.cwdDirs[m.cursor])
-	} else if m.cursor < m.entriesLength() {
-		i := m.cursor - len(m.cwdDirs)
-		m.cwd = filepath.Join(m.cwd, m.cwdFiles[i])
-	}
+	m.cwd = filepath.Join(m.cwd, m.getEntry(m.cursor))
 
 	m.restoreCursor()
 	m.updateEntries()
