@@ -1,4 +1,6 @@
 - With <f3> split view (https://github.com/charmbracelet/bubbletea/blob/main/examples/split-editors/main.go)
+- With <c> open vscode
+- With <space> add into selection
 
 + Don't display hidden items
 + Add hotkey to to toggle hidden items display
