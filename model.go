@@ -47,7 +47,7 @@ func ModelNew() Model {
 
 func isItemHidden(name string) bool {
 	if len(name) <= 0 {
-		return true // ?
+		return true // TODO: throw error (maybe return)
 	}
 	if name[0] == '.' {
 		return true
