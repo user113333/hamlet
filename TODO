@@ -1,7 +1,7 @@
 - With <f3> split view (https://github.com/charmbracelet/bubbletea/blob/main/examples/split-editors/main.go)
-- Don't display hidden items
-- Add hotkey to to toggle hidden items display
 
++ Don't display hidden items
++ Add hotkey to to toggle hidden items display
 + Before lines overflow write ellipsis (...)
 + On <h> position cursor to previous cwd
 + Remember cursor position after <l> and restore it after <h>
