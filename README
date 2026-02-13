@@ -7,5 +7,11 @@ go install
 
 FAQ
 
-Q: How to make a terminal automatically cd to cwd after program exit?
+Q: How to make a terminal automatically cd to the hamlet cwd on exit?
 A: alias h='hamlet -c && cd "$(cat $HOME/.config/hamlet/cwd)"'
+
+Q: What are the default keybindings
+A:
+    - q, ctrl+c: quit program
+    - h, j, k, l: move commands
+    - H: toggle 'show hidden items'
