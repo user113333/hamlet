@@ -18,6 +18,7 @@ type ModelApp struct {
 type ModelTea struct {
 	windowWidth  int
 	windowHeight int
+	shiftkey     string
 }
 
 type Model struct {
@@ -43,6 +44,7 @@ func ModelNew() Model {
 		ModelTea{
 			0,
 			0,
+			"",
 		},
 	}
 	m.updateEntries()
@@ -137,4 +139,14 @@ func (m *Model) Right() {
 
 	m.updateEntries()
 	m.restoreCursor()
+}
+
+func (m *Model) ChangeWD(wd string) {
+	m.cwd = wd
+	m.updateEntries()
+}
+
+func (m *Model) ChangeWDHome() {
+	s, _ := os.UserHomeDir() // TODO: err
+	m.ChangeWD(s)
 }

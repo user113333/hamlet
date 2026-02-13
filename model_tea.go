@@ -14,29 +14,53 @@ func (m Model) Init() tea.Cmd {
 func (m Model) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := message.(type) {
 	case tea.KeyMsg:
+		// TODO: move switch into m.ProcessKey
 		switch msg.String() {
 		case "q", "ctrl+c":
 			return m, tea.Quit
-		case "k", "up":
-			m.Up()
-		case "j", "down":
-			m.Down()
-		case "h", "left":
-			m.Left()
-		case "l", "right":
-			m.Right()
-		case "H":
-			m.showHiddenItems = !m.showHiddenItems
-			m.rememberCursor()
-			m.updateEntries()
-			m.restoreCursor()
 		}
+		m.ProcessKey(msg.String())
 	case tea.WindowSizeMsg:
 		model.windowWidth = msg.Width
 		model.windowHeight = msg.Height
 	}
 
 	return m, nil
+}
+
+func (m *Model) ProcessKey(key string) {
+	if len(m.shiftkey) > 0 {
+		switch m.shiftkey {
+		case "g":
+			m.ProcessKeyAfterg(key)
+		}
+		m.shiftkey = ""
+		return
+	}
+	switch key {
+	case "k", "up":
+		m.Up()
+	case "j", "down":
+		m.Down()
+	case "h", "left":
+		m.Left()
+	case "l", "right":
+		m.Right()
+	case "g":
+		m.shiftkey = "g"
+	case "H":
+		m.showHiddenItems = !m.showHiddenItems
+		m.rememberCursor()
+		m.updateEntries()
+		m.restoreCursor()
+	}
+}
+
+func (m *Model) ProcessKeyAfterg(key string) {
+	switch key {
+	case "h":
+		m.ChangeWDHome()
+	}
 }
 
 var (

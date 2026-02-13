@@ -15,3 +15,4 @@ A:
     - q, ctrl+c: quit program
     - h, j, k, l: move commands
     - H: toggle 'show hidden items'
+    - gh: change wd to home directory
